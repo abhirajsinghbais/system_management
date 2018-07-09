@@ -1,0 +1,47 @@
+{% extends "main_base.html" %}
+{% load user_profile_filters %}
+{% load static %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4"></div>
+			<div class="col-md-4">
+				<div class="form_main">
+					<h4 class="heading"><strong>Create Project </strong> <span></span></h4>
+					<div class="form">
+						<form method="Post" >
+							{% csrf_token %}
+							{{ form.title | placeholder:'Project Title'| add_class:"txt" }}
+							{{form.title.errors}}
+							{{ form.description | placeholder:'Project Description'| add_class:"txt" }}
+							{{form.description.errors}}
+							{{ form.start_date | placeholder:'Start Date' | add_class:"txt"}}
+							{{form.start_date.errors}}
+							{{ form.end_date | placeholder:'End Date'| add_class:"txt"}}
+							{{form.end_date.errors}}
+							{{form.status | add_class:"txt"}} 
+							{{form.status.errors}}
+							<br>
+							<input type="submit" value="submit" name="submit" class="txt2" >
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4"></div>
+		</div>
+	</div>
+<script type="text/javascript">
+	$('#id_start_date').datepicker({
+    format: "mm/dd/yyyy",
+    calendarWeeks: true,
+    todayHighlight: true
+});
+	$('#id_end_date').datepicker({
+    format: "mm/dd/yyyy",
+    calendarWeeks: true,
+    todayHighlight: true
+});
+
+</script>
+{% endblock %}

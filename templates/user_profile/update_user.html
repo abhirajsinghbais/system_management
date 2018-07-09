@@ -1,0 +1,23 @@
+{% load static %}
+{% load user_profile_filters %}
+
+{% block content %}
+	<div class="form_main">
+		<h4 class="heading"><strong>Update Project </strong> <span></span></h4>
+			<div class="form">
+				<form method="Post" id="update_form" >
+					{% csrf_token %}
+						{{ form.first_name | placeholder:"First Name"| add_class:"txt" }}
+						{{form.first_name.errors}}
+						{{ form.last_name | placeholder:"Last Name"| add_class:"txt" }}
+						{{form.last_name.errors}}
+						
+					    <br>
+						<input type="button" value="Update" class="txt2" onclick="update_employee()">
+						<input type="button" value="Close" class="txt2" data-dismiss="modal">
+							
+				</form>
+			</div>
+	</div>
+
+{% endblock %}

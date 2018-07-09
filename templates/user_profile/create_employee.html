@@ -1,0 +1,30 @@
+{% extends "main_base.html" %}
+{% load user_profile_filters %}
+{% load static %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-4"></div>
+			<div class="col-md-4">
+				<div class="form_main">
+					<h4 class="heading"><strong>Create Employee </strong> <span></span></h4>
+					<div class="form">
+						<form method="Post" >
+							{% csrf_token %}
+							{{ form.email | placeholder:'Email'| add_class:"txt" }}
+							{{ form.email.errors}}
+							{{ form.first_name | placeholder:'FirstName'| add_class:"txt" }}
+							{{ form.first_name.errors}}
+							{{ form.last_name | placeholder:'LastName'| add_class:"txt" }}
+							{{ form.last_name.errors}}
+							<br>
+							<input type="submit" value="submit" name="submit" class="txt2" >
+						</form>
+					</div>
+				</div>
+			</div>
+			<div class="col-md-4"></div>
+		</div>
+	</div>
+{% endblock %}

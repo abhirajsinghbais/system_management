@@ -1,0 +1,199 @@
+{% extends "main_base.html" %}
+{% load static %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<a href="{%url 'projects:project_create' %}" class="button pull-right">Create Project </a>
+			</div>
+		</div>
+		<table id="project_data" class="table table-striped table-bordered" >
+			<thead>
+				<tr>
+					<th>Project Title</th>
+					<th>Project Description</th>
+					<th>Start Date</th>
+					<th>End Date</th>
+					<th>Status</th>
+					{% if request.user.role == "manager" %}
+						<th>Action</th>
+					{% endif %}
+				</tr>
+			</thead>
+			<tbody>
+				{% for project in object_list %}
+					<tr>
+						<td ><a href="{%url 'projects:task' project_id=project.id %}">{{project.title}}</a></td>
+						<td >{{project.description}}</td>
+						<td >{{project.start_date}}</td>
+						<td >{{project.end_date}}</td>
+						<td>{{project.status}}</td>
+						{% if request.user.role == "manager" %}
+						<td class="text-center">
+							<a href="#" class="btn btn-danger btn-sm" onclick="deleteRow('{{project.id}}',this)">
+	          				<span class="glyphicon glyphicon-trash"  ></span>
+	       							 </a>
+							<a href="#" class="btn btn-info btn-sm" onclick="Update('{{project.id}}')">
+	          				<span class="glyphicon glyphicon-edit"></span> Edit
+	        				</a>
+	        				<a href="#" id="assign_link" class="btn btn-info btn-sm" onclick = "getEmployeeList('{{project.id}}')" >Assign</a>
+						</td>
+						{% endif %}
+					</tr>
+				{% endfor %}
+
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Modal -->
+	<div id="myModal" class="modal fade" role="dialog">
+	  <div class="modal-dialog">
+		<!-- Modal content-->
+		<div class="modal-content">
+		 
+		  <div class="modal-body">
+		  </div>
+		</div>
+
+	  </div>
+	</div>
+
+
+	<script type="text/javascript">
+		var update_url = ""
+		var project_id=""
+		var title=""
+
+		function Update(id){
+			
+			update_url = "{% url 'projects:project_update'  0 %}".replace("0",id)
+			$.ajax({
+				type: "GET",
+				url: update_url,
+				success : function(data) {
+
+					$(".modal-body").html(data)
+					$("#myModal").modal("show");
+				},
+			})
+		};
+
+		function deleteRow(id,r) {
+		  	swal({
+			  	title: "Are you sure?",
+			  	text: "Once deleted, you will not be able to recover this project!",
+			  	icon: "warning",
+			  	buttons: true,
+			  	dangerMode: true,
+			})
+			.then((willDelete) => {
+			  	if (willDelete){
+					$.ajax({
+						type: "GET",
+						url: "{% url 'projects:project_delete' %}" ,
+						data:{'project_id':id},
+						success : function(data) {
+							if(data=="Project deleted successfully")
+								swal(data, {icon: "success",button: false,timer: 2000,});
+							else
+								swal(data, {icon: "warning",button: false,timer: 2000,});
+							setTimeout(function(){location.reload()}, 2000)
+						},
+					})
+				}
+				else {
+					swal("You have cancelled deleting Project");
+				}
+			});
+		}; 
+
+		$(document).ready(function() {
+			$('#project_data').DataTable({
+				"searching":   false,
+				"ordering": false,
+				"info":     false,
+				"lengthChange":false,
+				"dom": 'ifltp'
+			});
+		} );
+
+		function update_project(){
+			var frm = $('#update_form');
+			$.ajax({
+				type: frm.attr('method'),
+				url: update_url,
+				data: frm.serialize(),
+				success: function (data) {
+					location.reload();
+				},
+				error: function(data) {
+					alert(data);
+				}
+			});
+		};
+
+		function getEmployeeList(id){
+			
+			project_id=id
+			update_url = "{% url 'projects:project_employee_list'  0 %}".replace("0",id)
+			$.ajax({
+				type: "GET",
+				url: update_url,
+				success : function(data) {
+					$(".modal-body").html(data)
+					$("#myModal").modal("show");
+				},
+			})
+		};
+		
+		function submit_btn(){
+			var frm = $('#get_employee_list_form');
+			$.ajax({
+				type: 'POST',
+				url: update_url,
+				data: frm.serialize(),
+				success: function (data) {
+					getEmployeeList(project_id)
+				},
+				error: function(data) {
+					alert(data);
+				}
+			});
+		};
+
+		function deleteEmployee(user_id){
+		  	swal({
+			  	title: "Are you sure?",
+			  	text: "This employee will be removed from this project!",
+			  	icon: "warning",
+			  	buttons: true,
+			  	dangerMode: true,
+			})
+			.then((willDelete) => {
+			  	if (willDelete){
+					$.ajax({
+						type: "GET",
+						url: "{% url 'projects:project_employee_delete' %}" ,
+						data:{'employee_id':user_id,'project_id':project_id},
+						success : function(data) {
+							if(data=="Employee deleted successfully"){
+								swal(data, {icon: "success",button: false,timer: 2000,});
+								getEmployeeList(project_id)
+							}
+
+							else
+								swal(data, {icon: "warning",button: false,timer: 2000,});
+						},
+					})
+				}
+				else {
+					swal("You have cancelled deleting employee from this project");
+				}
+			});
+		}; 
+
+
+	</script>
+{% endblock %}

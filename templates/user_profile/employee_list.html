@@ -1,0 +1,192 @@
+{% extends "main_base.html" %}
+{% load static %}
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+	<div class="container">
+		<div class="row">
+			<div class="col-md-12">
+				<a href="{%url 'home:employee_create' %}" class="button pull-right">Create Employee </a>
+			</div>
+		</div>
+		<table id="employee_data" class="table table-striped table-bordered" >
+			<thead>
+				<tr>
+					<th>Email</th>
+					<th>First name</th>
+					<th>Last Name</th>
+					<th>Created At</th>
+					<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for user in object_list %}
+					<tr>
+						<td >{{user.email}}</td>
+						<td >{{user.first_name}}</td>
+						<td >{{user.last_name}}</td>
+						<td >{{user.date_created}}</td>
+						<td class="text-center">
+							<a href="#" class="btn btn-danger btn-sm" onclick="deleteRow('{{user.id}}',this)">
+	          				<span class="glyphicon glyphicon-trash"  ></span>
+	       							 </a>
+							<a href="#" class="btn btn-info btn-sm" onclick="Update('{{user.id}}')">
+	          				<span class="glyphicon glyphicon-edit"></span> Edit
+	        				</a>
+	        				<a href="#" class="btn btn-info btn-sm" onclick="assignProject('{{user.id}}')">
+	        				Assign
+
+	        				</a>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+
+	<!-- Modal -->
+	<div id="myModal" class="modal fade" role="dialog">
+	  <div class="modal-dialog">
+		<!-- Modal content-->
+		<div class="modal-content">
+		  <div class="modal-body">
+		  </div>
+		</div>
+
+	  </div>
+	</div>
+
+	<script type="text/javascript">
+		var update_url = ""
+		var user_id=""
+		var user_email=""
+		function Update(id){
+			update_url = "{% url 'home:employee_update'  0 %}".replace("0",id)
+			$.ajax({
+				type: "GET",
+				url: update_url,
+				success : function(data) {
+					$(".modal-body").html(data)
+					$("#myModal").modal("show");
+				},
+			})
+		}	
+
+		function deleteRow(id,r) {
+		  	swal({
+			  	title: "Are you sure?",
+			  	text: "Once deleted, you will not be able to recover this user!",
+			  	icon: "warning",
+			  	buttons: true,
+			  	dangerMode: true,
+			})
+			.then((willDelete) => {
+			  	if (willDelete){
+					$.ajax({
+						type: "GET",
+						url: "{% url 'home:employee_delete' %}" ,
+						data:{'user_id':id},
+						success : function(data) {
+							if(data=="User deleted successfully")
+								swal(data, {icon: "success",button: false,timer: 2000,});
+							else
+								swal(data, {icon: "warning",button: false,timer: 2000,});
+							setTimeout(function(){location.reload()}, 2000)
+						},
+					})
+				}
+				else {
+					swal("You have cancelled deleting user");
+				}
+			});
+		}; 
+
+		$(document).ready(function() {
+			$('#employee_data').DataTable({
+				"searching":   false,
+				"ordering": false,
+				"info":     false,
+				"lengthChange":false,
+				"dom": 'ifltp'
+			});
+		} );
+
+		function update_employee(){
+			
+			var frm = $('#update_form');
+			$.ajax({
+				type: frm.attr('method'),
+				url: update_url,
+				data: frm.serialize(),
+				success: function (data) {
+					location.reload();
+				},
+				error: function(data) {
+					alert(data);
+				}
+			});
+		};
+
+		function assignProject(id)
+		{
+			
+			user_id=id
+			update_url = "{% url 'home:employee_project_assign'  0 %}".replace("0",id)
+				$.ajax({
+					type: "GET",
+					url: update_url,
+					success : function(data) {
+						$(".modal-title").html("Assign Project")
+						$(".modal-body").html(data)
+						$("#myModal").modal("show");
+					},
+				})
+		};
+		function submit_btn(){
+				var frm = $('#assign_employee_project_form');
+				$.ajax({
+					type: frm.attr('method'),
+					url: update_url,
+					data: frm.serialize(),
+					success: function (data) {
+						assignProject(user_id)
+					},
+					error: function(data) {
+						alert(data);
+					}
+				});
+			};
+
+		function deleteProject(projectid) {
+			  	swal({
+				  	title: "Are you sure?",
+				  	text: "This employee will be removed from this project!",
+				  	icon: "warning",
+				  	buttons: true,
+				  	dangerMode: true,
+				})
+				.then((willDelete) => {
+				  	if (willDelete){
+						$.ajax({
+							type: "GET",
+							url: "{% url 'projects:project_employee_delete' %}" ,
+							data:{'employee_id':user_id,'project_id':projectid},
+							success : function(data) {
+								if(data=="Employee deleted successfully"){
+									swal("Project Deleted successfully", {icon: "success",button: false,timer: 2000,});
+									assignProject(user_id)
+								}
+
+								else
+									swal("Project does not exist", {icon: "warning",button: false,timer: 2000,});
+							},
+						})
+					}
+					else {
+						swal("You have cancelled deleting employee from this project");
+					}
+				});
+			}; 
+
+	</script>
+{% endblock %}

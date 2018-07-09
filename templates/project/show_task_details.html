@@ -1,0 +1,24 @@
+<h4 class="heading"><strong>Task Details </strong> <span></span></h4><br>
+<form>
+    <div class="form-group">
+      <label >Task Name:</label>
+      <input type="text" class="form-control" value="{{task.title}}"readonly>
+    </div>
+    <div class="form-group">
+      <label>Task Description:</label>
+	  <textarea name="message" rows="5" cols="35" id="textarea_task_update" readonly>{{task.description}}</textarea>   
+	</div>
+	 <div class="form-group">
+      <label >Employee Name:</label>
+      <input type="text" class="form-control" value="{{task.employee.get_full_name}}" readonly>
+	</div>
+	<div class="form-group">
+      <label >Start Date:</label>
+      <input type="text" class="form-control" value="{{task.start_date}}" readonly>
+	</div>
+	<div class="form-group">
+      <label >End Date:</label>
+      <input type="text" class="form-control" value="{{task.end_date}}" readonly>
+	</div>
+	<button type="button" id="show_task_details_close" class="txt2" data-dismiss="modal">Close</button>
+</form>

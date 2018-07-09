@@ -1,0 +1,28 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>{% block title %}My Site{% endblock %}</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+		<link rel="stylesheet" href="{% static 'css/datatable_bootstrap.css' %}">
+		<link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}" />
+
+		<script src="{% static 'javascript/jquery.js' %}"></script>
+		<script src="{% static 'javascript/bootstrap.js' %}"></script>
+		<script src="{% static 'javascript/datatable_jquery.js' %}"></script>
+		<script src="{% static 'javascript/datatable_bootstrap.js' %}"></script>
+		<script src="{% static 'javascript/sweetalert.js' %}"></script>
+		<script src="{% static 'javascript/datepicker.js' %}"></script>
+		<script src="{% static 'javascript/task.js' %}"></script>
+
+
+	</head>
+	<body >
+		{% block body %}
+
+		{% endblock %}
+	</body>
+</html>

@@ -1,0 +1,474 @@
+{% extends "main_base.html" %}
+{% load user_profile_filters %}
+{% load static %}
+
+{% block content %}
+
+<script type="text/javascript">
+	var timer_objects=[]
+
+	function activity_status_change(id,activity_status){
+		console.log("HEY.....")
+		task_id=id;
+		if(activity_status == "Started"){
+			console.log("abhiraj");
+			x=setInterval(function() { starttimer(id); },1000);
+			var timer_obj={interval_id:x,task_id:id}
+			timer_objects.push(timer_obj)
+			 console.log(timer_objects)
+		}
+		
+		else {
+			if(activity_status == 'Play'){
+				var result = timer_objects.filter(function( obj ) {
+  				return obj.task_id == id;
+				});
+				if (result!=""){
+					clearTimeout(result[0].interval_id)
+					index = timer_objects.findIndex(x => x.task_id==id);
+					timer_objects.splice(index,1)
+					console.log("hello")
+					console.log(result)
+				}
+			}
+		}
+		update_url = "{% url 'projects:activity_status_change' %}";
+		$.ajax({
+			type: "GET",
+			url: update_url,
+			data:{'task_id':id,'activity_status':activity_status},
+			success : function(data) {
+				console.log(activity_status)
+				if(activity_status == "Started"){
+					console.log("activity_status 111")
+
+					$("#"+ id +"_div_start").removeClass("hide")
+					$("#"+ id +"_div_play").addClass("hide")
+				}
+				if(activity_status == "Play"){
+					console.log("activity_status 222")
+
+					$("#"+ id +"_div_play").removeClass("hide")
+					$("#"+id + "_div_start").addClass("hide")
+				}
+
+
+			},
+				});
+	};
+
+</script>
+
+<div class="container">
+	<div class="container-fluid">
+	    <div id="sortableKanbanBoards" class="row">
+	        <div class="col-md-4">
+				<div class="panel panel-primary kanban-col " >
+			        <div class="panel-heading">TODO
+			            <i class="fa fa-2x fa-plus-circle pull-right"></i>
+				            {% if request.user.role == "manager" %}
+					            <a href="#" onclick="addTask('{{project_id}}','Todo')" 
+					               class="pull-right task_link_color">Add task...
+					            </a>
+					        {% endif %}
+			        </div>
+			        <div class="panel-body">
+			            <div id="Todo" class="kanban-centered" >
+					        {% for task in todo_list %}
+								<article class="kanban-entry grab scrollable" id = '{{task.id}}' draggable="true">
+					                <div class="kanban-entry-inner">
+					                    <div class="kanban-label" >
+					                    	<div class="row">
+					                    		<div class="col-md-8">
+							                        <h2><a href="#" onclick="show_task_details('{{task.id}}')" >{{task.title}}</a>
+							                        </h2>
+							                    </div>
+								                    <div class="col-md-4">
+						                    			<div id="action_btns">
+						                    			   {% if request.user.role == 'manager' %}
+
+																<a href="#"onclick="Update('{{task.id}}')">					
+																	<span class="glyphicon glyphicon-edit"></span>
+																</a>
+																<a href="#" class="trash" onclick="deleteRow('{{task.id}}',this)">
+																    <span class="glyphicon glyphicon-trash"></span>
+																</a>
+																<a href="#" class="flag" 
+																    onclick="getEmployeeTaskList('{{task.id}}','{{task.title}}')">
+																    <span class="glyphicon glyphicon-user" ></span>
+																</a>
+
+															{% endif %}
+
+															{% if request.user.role == "employee" %}
+
+																<div id="{{task.id}}_div_play" class="{% if task.activity == 'Play' %}{%else%}hide{%endif%}">
+																	<a id="{{task.id}}_play" href="#" onclick="activity_status_change('{{task.id}}','Started')">
+																    	<span class="glyphicon glyphicon-play" id="{{task.id}}_play_span"></span>
+																	</a>
+																</div>
+																<div id="{{task.id}}_div_start" class="{% if task.activity == 'Started' %}activity_status_change('{{task.id}}','Started'){%else%}hide{%endif%}">
+																	<a id="{{task.id}}_start" href="#" onclick="activity_status_change('{{task.id}}','Play')" >
+																    	<span class="glyphicon glyphicon-stop" id="{{task.id}}_start_span"></span>
+																	</a>
+																</div>
+																{% if task.activity == "Started" %}
+																	<script type="text/javascript">
+																		activity_status_change('{{task.id}}','Started')
+																	</script>
+																{% endif %}
+					            							{% endif %}
+
+														</div>
+													</div>
+												</div>
+		                                </div>
+		                                {% if request.user.role == "employee" %} 
+
+					                        <p >
+						                  		<span id="{{task.id}}_days">{{total_time|getDays:task.id}}</span> Days
+												<span id="{{task.id}}_hours">{{total_time|getHours:task.id}}</span>:
+						                        <span id="{{task.id}}_minutes">{{total_time|getMinutes:task.id}}</span>:
+						                        <span id="{{task.id}}_seconds">{{total_time|getSeconds:task.id}}</span>
+					                        </p>
+					                   	{% endif %}
+					                   		
+					                   		<p class="task_para">{{task.description}}</p>
+
+					            </article>
+			                {% endfor %}
+			            </div>
+			        </div>
+			    </div>
+		    </div>
+	        <div class="col-md-4">
+				<div class="panel panel-primary kanban-col " >
+		            <div class="panel-heading">DOING
+		                <i class="fa fa-2x fa-plus-circle pull-right"></i>
+			                {% if request.user.role == "manager" %}
+				                <a href="#" onclick="addTask('{{project_id}}','Doing')" 
+				                   class="pull-right task_link_color">Add task...
+				                </a>
+				            {% endif %}
+		            </div>
+		            <div class="panel-body">
+		                <div id="Doing" class="kanban-centered">
+		                    {% for task in doing_list %}
+		                        <article class="kanban-entry grab scrollable" id = '{{task.id}}' draggable="true">
+		                            <div class="kanban-entry-inner">
+										<div class="kanban-label">
+											<div class="row">
+												<div class="col-md-8">
+		                                    		<h2><a href="#" onclick="show_task_details('{{task.id}}')">{{task.title}}</a> </h2>
+		                                    	</div>
+		                                    	<div class="col-md-4">
+					                                <div class="pull-right">
+					                                    {% if request.user.role == 'manager' %}
+															<a href="#" onclick="Update('{{task.id}}')">
+														    <span class="glyphicon glyphicon-edit"></span>
+														    </a>
+														    <a href="#" class="trash" onclick="deleteRow('{{task.id}}',this)">
+														    	<span class="glyphicon glyphicon-trash"></span>
+														    </a>
+														    <a href="#" onclick="getEmployeeTaskList('{{task.id}}','{{task.title}}')">
+														    <span class="glyphicon glyphicon-user"></span>
+															</a>
+														{% endif %}
+														{% if request.user.role == 'employee'%}
+														   <div id="{{task.id}}_div_play" class="{% if task.activity == 'Play' %}{%else%}hide{%endif%}">
+																<a id="{{task.id}}_play" href="#" onclick="activity_status_change('{{task.id}}','Started')">
+															    	<span class="glyphicon glyphicon-play" id="{{task.id}}_play_span"></span>
+																</a>
+															</div>
+															<div id="{{task.id}}_div_start" class="{% if task.activity == 'Started' %}{%else%}hide{%endif%}">
+																<a id="{{task.id}}_start" href="#" onclick="activity_status_change('{{task.id}}','Play')" >
+															    	<span class="glyphicon glyphicon-stop" id="{{task.id}}_start_span"></span>
+																</a>
+																
+															</div>
+															{% if task.activity == "Started" %}
+
+																<script type="text/javascript">
+																	activity_status_change('{{task.id}}','Started')
+																</script>
+
+															{% endif %}
+														{% endif %}
+
+					                     			</div>
+				                     			</div>
+			                     			</div>
+		                                </div>
+		                              	{% if request.user.role == "employee" %} 
+
+		                           		<p >
+					                  		<span id="{{task.id}}_days">{{ total_time|getDays:task.id }}</span> Days
+											<span id="{{task.id}}_hours">{{ total_time|getHours:task.id }}</span>:
+					                        <span id="{{task.id}}_minutes">{{ total_time|getMinutes:task.id }}</span>:
+					                        <span id="{{task.id}}_seconds">{{ total_time|getSeconds:task.id }}</span>
+					                    </p>
+
+					                    {% endif %}
+					                    				
+					                  	<p class="task_para">{{task.description}}</p>
+
+					             	</div>
+		                        </article>
+							{% endfor %}
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+	        <div class="col-md-4">
+				<div class="panel panel-primary kanban-col ">
+		            <div class="panel-heading">DONE
+		                <i class="fa fa-2x fa-plus-circle pull-right"></i>
+			                {% if request.user.role == "manager" %}
+				                <a href="#" onclick="addTask('{{project_id}}','Done')" 
+				                   class="pull-right 	task_link_color">Add task...
+				                </a>
+				            {% endif %}
+		            </div>
+		            <div class="panel-body">
+		                <div id="Done" class="kanban-centered">
+		                    {% for task in done_list %}
+		                        <article class="kanban-entry grab scrollable" id = '{{task.id}}' draggable="true">
+		                            <div class="kanban-entry-inner">
+		                            	<div class="kanban-label">
+		                            		<div class="row">
+		                            			<div class="col-md-8">
+				                                    <h2><a href="#" onclick="show_task_details('{{task.id}}')">{{task.title}}</a> <span></span></h2>
+				                                </div>
+					                                <div class="col-md-4">		                                    
+					                                	<div class="pull-right action-buttons">
+					                           				{% if request.user.role == 'manager' %}
+																<a href="#" onclick="Update('{{task.id}}')">
+																    <span class="glyphicon glyphicon-edit"></span>
+															    </a>
+															    <a href="#" class="trash" 
+																    onclick="deleteRow('{{task.id}}',this)">
+																    <span class="glyphicon glyphicon-trash"></span>
+																</a>
+																<a href="#" class="flag" 
+																    onclick="getEmployeeTaskList('{{task.id}}','{{task.title}}')">
+																    <span class="glyphicon glyphicon-user"></span>
+																</a>
+															{% endif %}
+														  	    {% if request.user.role == 'employee'%}
+														    		<div id="{{task.id}}_div_play" class="{% if task.activity == 'Play' %}{%else%}hide{%endif%}">
+																		<a id="{{task.id}}_play" href="#" onclick="activity_status_change('{{task.id}}','Started')">
+																	    	<span class="glyphicon glyphicon-play" id="{{task.id}}_play_span"></span>
+																		</a>
+																	</div>
+																	<div id="{{task.id}}_div_start" class="{% if task.activity == 'Started' %}{%else%}hide{%endif%}">
+																		<a id="{{task.id}}_start" href="#" onclick="activity_status_change('{{task.id}}','Play')" >
+																	   		<span class="glyphicon glyphicon-stop" id="{{task.id}}_start_span"></span>
+																		</a>
+																	</div>
+																{% if task.activity == "Started" %}
+
+																	<script type="text/javascript">
+																		activity_status_change('{{task.id}}','Started')
+																	</script>
+																{% endif %}
+															{% endif %}
+
+			                     						</div>
+			                     					</div>
+			                     				</div>
+		                                </div>
+		                                {% if request.user.role == "employee" %} 
+
+		                              	<p>
+		                                	<span id="{{task.id}}_days">{{ total_time|getDays:task.id }}</span> Days
+											<span id="{{task.id}}_hours">{{ total_time|getHours:task.id }}</span>:
+					                        <span id="{{task.id}}_minutes">{{ total_time|getMinutes:task.id }}</span>:
+					                        <span id="{{task.id}}_seconds">{{ total_time|getSeconds:task.id }}</span>
+										</p>
+										{% endif %}
+
+										<p class="task_para">{{task.description}}</p>
+		                            </div>
+		                        </article>
+		                    {% endfor %}
+		                </div>
+		            </div>
+		        </div>
+	        </div>
+	    </div>
+	</div>
+</div>
+
+<div id="myModalTask" class="modal fade " role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body" id="modalTaskBody">
+			  	</div>
+			</div>
+		</div>
+</div>
+
+<script>
+
+projectid=""
+status=""
+task_id=""
+
+	function addTask(project_id,status_task)
+	{
+		status=status_task
+		projectid=project_id
+		update_url = "{% url 'projects:task_add' %}" 
+		$.ajax({
+				type: "GET",
+				url: update_url,
+				success : function(data) {
+				$(".modal-body").html(data)
+				$("#myModalTask").modal("show");
+				},
+		})
+
+	};	
+
+	function submit_btn(){
+		var frm = $('#add_task_form')
+		update_url = "{% url 'projects:task_add' %}"
+		$.ajax({
+			type: frm.attr('method'),
+			url: update_url,
+			data: frm.serialize()+'&project_id=' + projectid + '&status=' + status,
+			success: function (data){
+				location.reload();
+			},
+			error: function(data) {
+					alert(data);
+			}
+		});
+	};
+
+	function deleteRow(id,r) {
+		swal({
+				title: "Are you sure?",
+				text: "Once deleted, you will not be able to recover this project!",
+				icon: "warning",
+				buttons: true,
+				dangerMode: true,
+			}).then((willDelete) => {
+				if (willDelete){
+					$.ajax({
+						type: "GET",
+						url: "{% url 'projects:task_delete'  0 %}".replace("0",id) ,
+						success : function(data) {
+							if(data=="Task deleted successfully")
+								swal(data, {icon: "success",button: false,timer: 2000,});
+							else
+								swal(data, {icon: "warning",button: false,timer: 2000,});
+								setTimeout(function(){location.reload()}, 2000)
+						},
+					})
+				}
+				else {
+					swal("You have cancelled deleting Project");
+					}
+				});
+	}; 
+
+	function Update(id){
+		task_id=id
+		update_url = "{% url 'projects:task_update'  0 %}".replace("0",id)
+		$.ajax({
+			type: "GET",
+			url: update_url,
+			success : function(data) {
+				$(".modal-body").html(data)
+				$("#myModalTask").modal("show");
+			},
+				})
+	};
+
+	function update_task_form(){
+		update_url = "{% url 'projects:task_update'  0 %}".replace("0",task_id)
+		var frm = $('#update_form');
+		$.ajax({
+			type: frm.attr('method'),
+			url: update_url,
+			data: frm.serialize(),
+			success: function (data) {
+				location.reload()
+			},
+			error: function(data) {
+				alert(data);
+			}
+		});
+	};
+
+	function getEmployeeTaskList(id,title){
+		task_id=id
+		update_url = "{% url 'projects:task_employee_list'  0 %}".replace("0",id)
+		$.ajax({
+			type: "GET",
+			url: update_url,
+			success : function(data) {
+				$(".modal-title").html(title)
+				$(".modal-body").html(data)
+				$("#myModalTask").modal("show");
+			},
+		})
+	};
+
+	function submit_btn_assign(){
+		var frm = $('#get_employee_task_form');
+			$.ajax({
+				type: frm.attr('method'),
+				url: update_url,
+				data: frm.serialize(),
+				success: function (data) {
+					location.reload();
+				},
+				error: function(data) {
+					alert(data);
+				}
+			});	
+	}
+
+	function show_task_details(id){
+		
+		update_url = "{% url 'projects:task_details'  0 %}".replace("0",id)
+		$.ajax({
+			type: "GET",
+			url: update_url,
+			success : function(data) {
+				$(".modal-body").html(data)
+				$("#myModalTask").modal("show");
+			},
+		})
+	}
+
+	function starttimer(id){
+
+		let seconds=document.getElementById(id+"_seconds").innerHTML;
+		let minutes=document.getElementById(id+"_minutes").innerHTML;
+		let hours=document.getElementById(id+"_hours").innerHTML;
+		let days=document.getElementById(id+"_days").innerHTML;
+		document.getElementById(id+"_seconds").innerHTML=++seconds;
+		if(seconds==60){
+			document.getElementById(id+"_seconds").innerHTML=0;
+			document.getElementById(id+"_minutes").innerHTML=++minutes
+			if(minutes==60){
+				document.getElementById(id+"_minutes").innerHTML=0
+				document.getElementById(id+"_hours").innerHTML=++hours
+			}
+			if(hours==24){
+				document.getElementById(id+"_hours").innerHTML=0
+				document.getElementById(id+"_days").innerHTML=++days
+			}
+		}
+
+	}
+
+
+	
+</script>
+
+{% endblock %}
+

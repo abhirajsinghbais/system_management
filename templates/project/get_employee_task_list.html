@@ -1,0 +1,16 @@
+{% load static %}
+<form method="post" id="get_employee_task_form">
+    {% csrf_token %}
+      <label for="sel1">Employee list (select one):</label>
+        		<div class="form-group">
+              	<select class="form-control" id="sel1" name="employee_choice" >
+              		<option value="" selected disabled>{{selected_employee}}</option>
+               			{% for x in employee_project_list %}
+                      <option value='{{x.id}}'>{{x.get_full_name}}</option>
+                  	{% endfor %}
+              	</select>
+                  <input type="button" value="submit" name="submit" class="txt2" onclick="submit_btn_assign()">
+                  <button type="button" class="txt2" data-dismiss="modal">Close</button>
+        		</div>
+</form>
+  

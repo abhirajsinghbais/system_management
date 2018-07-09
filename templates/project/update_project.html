@@ -1,0 +1,41 @@
+{% load static %}
+{% load user_profile_filters %}
+
+{% block content %}
+	<div class="form_main">
+		<h4 class="heading"><strong>Update Project </strong> <span></span></h4>
+			<div class="form">
+				<form method="Post" id="update_form" >
+					{% csrf_token %}
+						{{ form.title | placeholder:"Task Title"| add_class:"txt" }}
+						{{form.title.errors}}
+						{{ form.description | placeholder:"Task Description"| add_class:"txt" }}
+						{{form.description.errors}}
+						{{ form.start_date | placeholder:"Start Date" | add_class:"txt"}}
+						{{form.start_date.errors}}
+						{{ form.end_date | placeholder:"End Date"| add_class:"txt"}}
+						{{form.end_date.errors}}
+					
+					    <br>
+						<input type="button" value="Update" class="txt2" onclick="update_project()">
+						<input type="button" value="Close" class="txt2" data-dismiss="modal">
+							
+				</form>
+			</div>
+	</div>
+			
+		
+<script type="text/javascript">
+	$('#id_start_date').datepicker({
+    format: "mm/dd/yyyy",
+    calendarWeeks: true,
+    todayHighlight: true
+});
+	$('#id_end_date').datepicker({
+    format: "mm/dd/yyyy",
+    calendarWeeks: true,
+    todayHighlight: true
+});
+
+</script>
+{% endblock %}
